@@ -108,8 +108,8 @@ const Register = () => {
         >
           <div className="space-y-5">
             {[
-              { id: "name", label: "Full name", type: "text", name: "name", placeholder: "Jane Doe", autoComplete: "name" },
-              { id: "email", label: "Email", type: "email", name: "email", placeholder: "you@company.com", autoComplete: "email" },
+              { id: "name", label: "Full name", type: "text", name: "name", placeholder: "Enter your full name", autoComplete: "name" },
+              { id: "email", label: "Email", type: "email", name: "email", placeholder: "Enter your email", autoComplete: "email" },
               { id: "password", label: "Password", type: "password", name: "password", placeholder: "Min. 6 characters", autoComplete: "new-password" },
               { id: "confirmPassword", label: "Confirm password", type: "password", name: "confirmPassword", placeholder: "Repeat password", autoComplete: "new-password" },
             ].map((field) => (
