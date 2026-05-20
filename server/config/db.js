@@ -29,13 +29,33 @@ const normalizeEnvValue = (raw) => {
 const looksLikeClusterHost = (value) =>
   /\.mongodb\.(net|com)/i.test(value) && !value.includes("@");
 
-const buildUriFromParts = (hostOverride = null) => {
+const looksLikePasswordOnly = (value) =>
+  !isValidMongoUri(value) &&
+  !looksLikeClusterHost(value) &&
+  !value.includes("@") &&
+  !value.includes("/");
+
+const getMissingPartKeys = () => {
+  const missing = [];
+  if (!pickEnv("MONGO_USER", "MONGODB_USER", "DB_USER")) {
+    missing.push("MONGO_USER");
+  }
+  if (!pickEnv("MONGO_PASSWORD", "MONGODB_PASSWORD", "DB_PASSWORD")) {
+    missing.push("MONGO_PASSWORD");
+  }
+  if (
+    !pickEnv("MONGO_HOST", "MONGO_CLUSTER", "MONGODB_HOST", "MONGODB_CLUSTER")
+  ) {
+    missing.push("MONGO_CLUSTER");
+  }
+  return missing;
+};
+
+const buildUriFromParts = (hostOverride = null, passwordOverride = null) => {
   const user = pickEnv("MONGO_USER", "MONGODB_USER", "DB_USER");
-  const password = pickEnv(
-    "MONGO_PASSWORD",
-    "MONGODB_PASSWORD",
-    "DB_PASSWORD",
-  );
+  const password =
+    passwordOverride ||
+    pickEnv("MONGO_PASSWORD", "MONGODB_PASSWORD", "DB_PASSWORD");
   const host =
     hostOverride ||
     pickEnv("MONGO_HOST", "MONGO_CLUSTER", "MONGODB_HOST", "MONGODB_CLUSTER");
@@ -74,26 +94,41 @@ const getMongoUri = () => {
 
   const hostFromDirect =
     direct && looksLikeClusterHost(direct) ? direct : null;
-  const fromParts = buildUriFromParts(hostFromDirect);
+  const passwordFromDirect =
+    direct && looksLikePasswordOnly(direct) ? direct : null;
+  const fromParts = buildUriFromParts(hostFromDirect, passwordFromDirect);
 
   if (fromParts) {
     if (direct) {
       console.warn(
         "[db] MONGO_URI was invalid; connected using MONGO_USER + MONGO_PASSWORD + MONGO_CLUSTER. " +
-          "You can delete MONGO_URI on Render to avoid this warning.",
+          "Delete MONGO_URI on Render and use the three variables instead.",
       );
     }
     return fromParts;
   }
 
   if (direct) {
+    const missing = getMissingPartKeys();
+    const passwordHint = looksLikePasswordOnly(direct)
+      ? " MONGO_URI looks like only a password — remove it and use the variables below."
+      : "";
+
     throw new Error(
-      "MONGO_URI on Render is not a valid MongoDB URL.\n\n" +
-        "Fix (choose ONE):\n" +
-        "  A) Delete MONGO_URI and set: MONGO_USER, MONGO_PASSWORD, MONGO_CLUSTER (e.g. cluster0.xxxxx.mongodb.net)\n" +
-        "  B) Replace MONGO_URI with the full Atlas string from Connect → Drivers:\n" +
-        "     mongodb+srv://USERNAME:PASSWORD@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority\n\n" +
-        "Do not set MONGO_URI to only the password.",
+      "MONGO_URI on Render is not a valid MongoDB URL." +
+        passwordHint +
+        "\n\n" +
+        (missing.length
+          ? `Also missing on Render: ${missing.join(", ")}\n\n`
+          : "\n") +
+        "Do this on Render → Environment:\n" +
+        "  1. DELETE the variable MONGO_URI\n" +
+        "  2. ADD these (get cluster host from Atlas → Connect → Drivers):\n" +
+        "       MONGO_USER     = your Atlas database username\n" +
+        "       MONGO_PASSWORD = your Atlas database password\n" +
+        "       MONGO_CLUSTER  = cluster0.xxxxx.mongodb.net\n" +
+        "       MONGO_DB_NAME  = template_store\n" +
+        "       JWT_SECRET     = any long random string",
     );
   }
 
