@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Template = require("./models/Template");
+const Template = require("../models/Template");
 require("dotenv").config();
 
 const mongoUri = process.env.MONGO_URI || process.env.MONGO_URL;

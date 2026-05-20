@@ -51,7 +51,7 @@ const Login = () => {
       }
     } catch (error) {
       const errorMessage = !error.response
-        ? "Cannot reach the server. Start the backend on port 5100."
+        ? "Cannot reach the server. Check that the API is running."
         : error.response.data?.message || "Login failed. Please try again.";
       Swal.fire({
         title: "Login failed",

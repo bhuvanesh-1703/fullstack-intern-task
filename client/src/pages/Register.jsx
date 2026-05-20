@@ -76,7 +76,7 @@ const Register = () => {
       }
     } catch (error) {
       const errorMessage = !error.response
-        ? "Cannot reach the server. Start the backend on port 5100."
+        ? "Cannot reach the server. Check that the API is running."
         : error.response.data?.message ||
           "Registration failed. Please try again.";
       Swal.fire({

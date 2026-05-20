@@ -13,6 +13,10 @@ const templateRoutes = require("./routes/templateRoutes");
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.json({ status: "ok", message: "Template Store API" });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/favorites", favouriteRoutes);
