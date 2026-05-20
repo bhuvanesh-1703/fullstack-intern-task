@@ -23,14 +23,19 @@ app.use("/api/favorites", favouriteRoutes);
 
 const PORT = process.env.PORT || 5100;
 
-mongoose
-  .connect(getMongoUri(), getMongoOptions())
-  .then(() => console.log("✓ MongoDB Connected"))
-  .catch((err) => {
+const startServer = async () => {
+  try {
+    const mongoUri = getMongoUri();
+    await mongoose.connect(mongoUri, getMongoOptions());
+    console.log("✓ MongoDB Connected");
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
     console.error("✗ MongoDB Connection Error:", err.message);
     process.exit(1);
-  });
+  }
+};
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+startServer();
