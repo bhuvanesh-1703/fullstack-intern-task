@@ -1,29 +1,17 @@
 import axios from "axios";
 
-/**
- * Backend mounts routes under /api (see server/app.js).
- * VITE_API_URL may be set with or without /api for Vercel/Render deploys.
- */
-export const getApiBaseUrl = () => {
-  const fallback = "http://localhost:5100/api";
-  const raw = (import.meta.env.VITE_API_URL || fallback).trim();
+// Must end with /api because backend uses app.use("/api/auth", ...)
+let baseURL = import.meta.env.VITE_API_URL || "http://localhost:5100/api";
 
-  const withoutTrailingSlash = raw.replace(/\/+$/, "");
-
-  if (withoutTrailingSlash.endsWith("/api")) {
-    return withoutTrailingSlash;
-  }
-
-  return `${withoutTrailingSlash}/api`;
-};
+if (!baseURL.endsWith("/api")) {
+  baseURL = baseURL + "/api";
+}
 
 const API = axios.create({
-  baseURL: getApiBaseUrl(),
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: baseURL,
 });
 
+// Add JWT token to every request if user is logged in
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
 
