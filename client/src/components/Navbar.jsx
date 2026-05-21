@@ -1,13 +1,12 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Swal from "sweetalert2";
 import { SWAL_CONFIRM } from "../utils/swal";
+import { FavoriteContext } from "../context/FavoriteContext";
 
 const linkClass = ({ isActive }) =>
   `text-sm font-medium transition-all duration-300 ${
-    isActive
-      ? "text-slate-900"
-      : "text-slate-500 hover:text-slate-900"
+    isActive ? "text-slate-900" : "text-slate-500 hover:text-slate-900"
   }`;
 
 const mobileLinkClass = ({ isActive }) =>
@@ -22,6 +21,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user") || "{}") : null;
+  const { favoriteCount } = useContext(FavoriteContext);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -38,6 +38,7 @@ const Navbar = () => {
       if (result.isConfirmed) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("favoriteCount");
         closeMenu();
 
         Swal.fire({
@@ -74,9 +75,16 @@ const Navbar = () => {
               Templates
             </NavLink>
             {token && (
-              <NavLink to="/favorites" className={linkClass}>
-                Favorites
-              </NavLink>
+              <div className="relative">
+                <NavLink to="/favorites" className={linkClass}>
+                  Favorites
+                </NavLink>
+                {favoriteCount > 0 && (
+                  <span className="absolute -right-3 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg">
+                    {favoriteCount}
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
@@ -136,17 +144,36 @@ const Navbar = () => {
 
         {menuOpen && (
           <div className="mt-4 space-y-1 border-t border-slate-200 pt-4 md:hidden">
-            <NavLink to="/templates" className={mobileLinkClass} onClick={closeMenu}>
+            <NavLink
+              to="/templates"
+              className={mobileLinkClass}
+              onClick={closeMenu}
+            >
               Templates
             </NavLink>
             {token && (
-              <NavLink to="/favorites" className={mobileLinkClass} onClick={closeMenu}>
-                Favorites
-              </NavLink>
+              <div className="relative">
+                <NavLink
+                  to="/favorites"
+                  className={mobileLinkClass}
+                  onClick={closeMenu}
+                >
+                  Favorites
+                </NavLink>
+                {favoriteCount > 0 && (
+                  <span className="absolute -right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg">
+                    {favoriteCount}
+                  </span>
+                )}
+              </div>
             )}
             {!token ? (
               <>
-                <NavLink to="/login" className={mobileLinkClass} onClick={closeMenu}>
+                <NavLink
+                  to="/login"
+                  className={mobileLinkClass}
+                  onClick={closeMenu}
+                >
                   Log in
                 </NavLink>
                 <Link
@@ -160,7 +187,10 @@ const Navbar = () => {
             ) : (
               <>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                  Signed in as <span className="font-semibold text-slate-900">{user?.name}</span>
+                  Signed in as{" "}
+                  <span className="font-semibold text-slate-900">
+                    {user?.name}
+                  </span>
                 </div>
                 <button
                   type="button"

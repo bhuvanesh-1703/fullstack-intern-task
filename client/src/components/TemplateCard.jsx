@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import API from "../services/api";
 import Swal from "sweetalert2";
 import { SWAL_CONFIRM } from "../utils/swal";
+import { FavoriteContext } from "../context/FavoriteContext";
 
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23f1f5f9' width='400' height='300'/%3E%3Ctext fill='%2394a3b8' font-family='sans-serif' font-size='16' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ETemplate%3C/text%3E%3C/svg%3E";
@@ -18,6 +19,8 @@ const categoryColors = {
 const TemplateCard = ({ template, onFavorite, onRemove, onFavoriteToggle }) => {
   const [isFavorite, setIsFavorite] = useState(template?.isFavorite || false);
   const [isLoading, setIsLoading] = useState(false);
+  const { incrementFavoriteCount, decrementFavoriteCount } =
+    useContext(FavoriteContext);
 
   const badgeClass =
     categoryColors[template.category] || "bg-slate-100 text-slate-700";
@@ -31,15 +34,23 @@ const TemplateCard = ({ template, onFavorite, onRemove, onFavoriteToggle }) => {
       const response = await API.put(`/templates/${template._id}/favorite`);
 
       if (response.data.success) {
-        setIsFavorite(response.data.data.isFavorite);
+        const newFavoriteStatus = response.data.data.isFavorite;
+        setIsFavorite(newFavoriteStatus);
+
+        // Update global favorite count
+        if (newFavoriteStatus) {
+          incrementFavoriteCount();
+        } else {
+          decrementFavoriteCount();
+        }
 
         // Notify parent component if callback provided
         if (onFavoriteToggle) {
-          onFavoriteToggle(template._id, response.data.data.isFavorite);
+          onFavoriteToggle(template._id, newFavoriteStatus);
         }
 
         Swal.fire({
-          title: response.data.data.isFavorite
+          title: newFavoriteStatus
             ? "Added to favorites"
             : "Removed from favorites",
           icon: "success",

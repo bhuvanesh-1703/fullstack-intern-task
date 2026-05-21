@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import API from "../services/api";
 import TemplateCard from "../components/TemplateCard";
 import { SWAL_CONFIRM } from "../utils/swal";
+import { FavoriteContext } from "../context/FavoriteContext";
 
 const Favorites = () => {
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { updateFavoriteCount, decrementFavoriteCount } =
+    useContext(FavoriteContext);
 
   useEffect(() => {
     fetchFavorites();
@@ -19,6 +22,8 @@ const Favorites = () => {
       const res = await API.get("/favorites");
       if (res.data.success) {
         setFavorites(res.data.data);
+        // Update global favorite count with the count from favorites page
+        updateFavoriteCount(res.data.data.length);
       }
     } catch {
       Swal.fire({
@@ -35,7 +40,9 @@ const Favorites = () => {
   const removeFavorite = (templateId, templateName) => {
     Swal.fire({
       title: "Remove from favorites?",
-      text: templateName ? `"${templateName}" will be removed from your list.` : undefined,
+      text: templateName
+        ? `"${templateName}" will be removed from your list.`
+        : undefined,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: SWAL_CONFIRM,
@@ -44,6 +51,7 @@ const Favorites = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         setFavorites((prev) => prev.filter((item) => item._id !== templateId));
+        decrementFavoriteCount();
         Swal.fire({
           title: "Removed",
           text: "Template removed from favorites.",
@@ -77,7 +85,9 @@ const Favorites = () => {
           </p>
         ) : favorites.length === 0 ? (
           <div className="card-surface mx-auto max-w-lg p-10 text-center sm:p-12">
-            <h3 className="text-xl font-semibold text-slate-900">No favorites yet</h3>
+            <h3 className="text-xl font-semibold text-slate-900">
+              No favorites yet
+            </h3>
             <p className="mt-2 text-sm text-slate-500">
               Browse the marketplace and save templates you want to revisit.
             </p>
@@ -101,7 +111,8 @@ const Favorites = () => {
               ))}
             </div>
             <p className="mt-10 text-center text-sm text-slate-500">
-              {favorites.length} saved template{favorites.length !== 1 ? "s" : ""}
+              {favorites.length} saved template
+              {favorites.length !== 1 ? "s" : ""}
             </p>
           </>
         )}
