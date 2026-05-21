@@ -198,8 +198,8 @@ MongoDB Atlas is used for storing:
 # 📞 Contact Information
 
 - Email: bhuvaneshmahi2003@gmail.com.com
-- GitHub: https://github.com/your-github-username
-- LinkedIn: https://linkedin.com/in/your-linkedin-id
+- GitHub: https://github.com/bhuvanesh-1703/fullstack-intern-task.git
+- Deploy: https://fullstack-intern-task-mu.vercel.app/
 
 ---
 
