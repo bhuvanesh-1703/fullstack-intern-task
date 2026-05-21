@@ -35,14 +35,14 @@ const TemplateCard = ({ template, onFavorite, onRemove, onFavoriteToggle }) => {
         const newFavoriteStatus = response.data.data.isFavorite;
         setIsFavorite(newFavoriteStatus);
 
-        // Update global favorite count
+      
         if (newFavoriteStatus) {
           incrementFavoriteCount();
         } else {
           decrementFavoriteCount();
         }
 
-        // Notify parent component if callback provided
+      
         if (onFavoriteToggle) {
           onFavoriteToggle(template._id, newFavoriteStatus);
         }
