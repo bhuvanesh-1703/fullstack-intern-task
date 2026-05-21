@@ -1,21 +1,9 @@
 const mongoose = require("mongoose");
-
 const Template = require("../models/Template");
 
 require("dotenv").config();
 
-
-// MongoDB Connection
-
-mongoose.connect(process.env.MONGO_URI, {
-  dbName: "template_store",
-});
-
-
-//  Templates
-
 const templates = [
-
   {
     name: "Portfolio Website",
     description: "Modern portfolio template for developers and designers.",
@@ -79,33 +67,36 @@ const templates = [
       "https://images.unsplash.com/photo-1522202176988-66273c2fd55f",
     category: "Education",
   },
-
 ];
 
-
-
-
 const seedTemplates = async () => {
-
   try {
-
+   
     await Template.deleteMany();
 
-    await Template.insertMany(templates);
+    const insertedTemplates = await Template.insertMany(templates);
 
     console.log("✅ Templates Seeded Successfully");
+    console.log(insertedTemplates);
 
     process.exit();
-
   } catch (error) {
-
     console.log("❌ Seed Error:", error);
 
     process.exit(1);
-
   }
-
 };
 
+// MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI, {
+    dbName: "template_store",
+  })
+  .then(() => {
+    console.log("✅ MongoDB Connected");
 
-seedTemplates();
+    seedTemplates();
+  })
+  .catch((err) => {
+    console.log("❌ MongoDB Connection Error:", err);
+  });
