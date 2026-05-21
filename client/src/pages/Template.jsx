@@ -10,12 +10,6 @@ const Template = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-
-  const categories = [
-    "All",
-    ...new Set(templates.map((t) => t.category).filter(Boolean)),
-  ];
 
   useEffect(() => {
     fetchTemplates();
@@ -76,18 +70,19 @@ const Template = () => {
     }
   };
 
-  const filteredTemplates = templates
-    .filter(
-      (template) =>
-        selectedCategory === "All" || template.category === selectedCategory,
-    )
-    .filter(
-      (template) =>
-        template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.description
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()),
+  const handleFavoriteToggle = (templateId, isFavorite) => {
+    setTemplates((prevTemplates) =>
+      prevTemplates.map((template) =>
+        template._id === templateId ? { ...template, isFavorite } : template,
+      ),
     );
+  };
+
+  const filteredTemplates = templates.filter(
+    (template) =>
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="min-h-[calc(100vh-8rem)] bg-slate-100">
@@ -131,25 +126,10 @@ const Template = () => {
               />
             </div>
             <p className="text-sm text-slate-500 lg:whitespace-nowrap">
-              {loading ? "Loading..." : `${filteredTemplates.length} result${filteredTemplates.length !== 1 ? "s" : ""}`}
+              {loading
+                ? "Loading..."
+                : `${filteredTemplates.length} result${filteredTemplates.length !== 1 ? "s" : ""}`}
             </p>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setSelectedCategory(category)}
-                className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                  selectedCategory === category
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:shadow-md"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -159,15 +139,16 @@ const Template = () => {
           </p>
         ) : filteredTemplates.length === 0 ? (
           <div className="card-surface mx-auto max-w-lg p-10 text-center sm:p-12">
-            <h3 className="text-xl font-semibold text-slate-900">No templates found</h3>
+            <h3 className="text-xl font-semibold text-slate-900">
+              No templates found
+            </h3>
             <p className="mt-2 text-sm text-slate-500">
-              Try a different search term or category filter.
+              Try a different search term.
             </p>
             <button
               type="button"
               onClick={() => {
                 setSearchQuery("");
-                setSelectedCategory("All");
               }}
               className="btn-primary mt-8"
             >
@@ -181,6 +162,7 @@ const Template = () => {
                 key={template._id}
                 template={template}
                 onFavorite={addFavorite}
+                onFavoriteToggle={handleFavoriteToggle}
               />
             ))}
           </div>
